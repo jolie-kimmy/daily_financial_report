@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import os
 import shutil
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -9,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 import FinanceDataReader as fdr
 import pandas as pd
+import requests
 
 
 KST = ZoneInfo("Asia/Seoul")
@@ -24,6 +26,8 @@ class MarketItem:
     category: str
     unit: str
     digits: int
+    source: str = "fdr"
+    expected_name: str | None = None
 
 
 MARKET_ITEMS = [
@@ -32,6 +36,12 @@ MARKET_ITEMS = [
     MarketItem("원/달러", "USD/KRW", "환율", "KRW", 2),
     MarketItem("원/엔", "JPY/KRW", "환율", "KRW", 2),
     MarketItem("원/위안", "CNY/KRW", "환율", "KRW", 2),
+    MarketItem("미국채 10년", "US10YT", "금리", "%", 3),
+    MarketItem("미국채 20년", "FRED:DGS20", "금리", "%", 3),
+    MarketItem("미국채 30년", "US30YT", "금리", "%", 3),
+    MarketItem("국고채 10년", "010210000", "금리", "%", 3, "ecos", "국고채(10년)"),
+    MarketItem("국고채 20년", "010220000", "금리", "%", 3, "ecos", "국고채(20년)"),
+    MarketItem("국고채 30년", "010230000", "금리", "%", 3, "ecos", "국고채(30년)"),
 ]
 
 
@@ -53,7 +63,15 @@ def percent(value: float | int | None) -> str:
     return f"{float(value) * 100:+.2f}%"
 
 
-def fetch_market_item(item: MarketItem, today: datetime) -> dict[str, object]:
+def direction_class(value: object) -> str:
+    if isinstance(value, float) and value > 0:
+        return "up"
+    if isinstance(value, float) and value < 0:
+        return "down"
+    return "flat"
+
+
+def fetch_fdr_item(item: MarketItem, today: datetime) -> dict[str, object]:
     start = (today - timedelta(days=21)).strftime("%Y-%m-%d")
     end = (today + timedelta(days=1)).strftime("%Y-%m-%d")
     df = fdr.DataReader(item.code, start, end)
@@ -62,12 +80,13 @@ def fetch_market_item(item: MarketItem, today: datetime) -> dict[str, object]:
         raise RuntimeError(f"No data returned for {item.name} ({item.code})")
 
     df = df.sort_index()
+    value_column = "Close" if "Close" in df.columns else df.columns[0]
     latest = df.iloc[-1]
     previous = df.iloc[-2] if len(df) > 1 else None
-    latest_close = float(latest["Close"])
-    previous_close = float(previous["Close"]) if previous is not None else None
-    change = latest_close - previous_close if previous_close is not None else None
-    change_rate = change / previous_close if previous_close else None
+    latest_value = float(latest[value_column])
+    previous_value = float(previous[value_column]) if previous is not None else None
+    change = latest_value - previous_value if previous_value is not None else None
+    change_rate = change / previous_value if previous_value else None
 
     return {
         "name": item.name,
@@ -76,26 +95,69 @@ def fetch_market_item(item: MarketItem, today: datetime) -> dict[str, object]:
         "unit": item.unit,
         "digits": item.digits,
         "date": df.index[-1].strftime("%Y-%m-%d"),
-        "close": latest_close,
+        "close": latest_value,
         "change": change,
         "change_rate": change_rate,
-        "open": latest.get("Open"),
-        "high": latest.get("High"),
-        "low": latest.get("Low"),
-        "volume": latest.get("Volume"),
+        "source": "FinanceDataReader",
+        "verified_name": item.expected_name or item.name,
     }
+
+
+def fetch_ecos_item(item: MarketItem, today: datetime) -> dict[str, object]:
+    api_key = os.environ.get("BOK_API_KEY") or "sample"
+    start = (today - timedelta(days=10)).strftime("%Y%m%d")
+    end = (today + timedelta(days=1)).strftime("%Y%m%d")
+    url = (
+        "https://ecos.bok.or.kr/api/StatisticSearch/"
+        f"{api_key}/json/kr/1/10/817Y002/D/{start}/{end}/{item.code}"
+    )
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    payload = response.json()
+
+    rows = payload.get("StatisticSearch", {}).get("row", [])
+    if not rows:
+        raise RuntimeError(f"No ECOS data returned for {item.name} ({item.code})")
+
+    rows = sorted(rows, key=lambda row: row["TIME"])
+    latest = rows[-1]
+    previous = rows[-2] if len(rows) > 1 else None
+    verified_name = latest.get("ITEM_NAME1", "")
+    if item.expected_name and verified_name != item.expected_name:
+        raise RuntimeError(
+            f"Unexpected ECOS item for {item.name}: {verified_name} != {item.expected_name}"
+        )
+
+    latest_value = float(latest["DATA_VALUE"])
+    previous_value = float(previous["DATA_VALUE"]) if previous else None
+    change = latest_value - previous_value if previous_value is not None else None
+    change_rate = change / previous_value if previous_value else None
+
+    return {
+        "name": item.name,
+        "code": f"ECOS:817Y002/{item.code}",
+        "category": item.category,
+        "unit": item.unit,
+        "digits": item.digits,
+        "date": datetime.strptime(latest["TIME"], "%Y%m%d").strftime("%Y-%m-%d"),
+        "close": latest_value,
+        "change": change,
+        "change_rate": change_rate,
+        "source": "한국은행 ECOS",
+        "verified_name": verified_name,
+    }
+
+
+def fetch_market_item(item: MarketItem, today: datetime) -> dict[str, object]:
+    if item.source == "ecos":
+        return fetch_ecos_item(item, today)
+    return fetch_fdr_item(item, today)
 
 
 def build_rows(items: list[dict[str, object]]) -> str:
     rows = []
     for item in items:
-        change = item["change"]
-        direction = "flat"
-        if isinstance(change, float) and change > 0:
-            direction = "up"
-        elif isinstance(change, float) and change < 0:
-            direction = "down"
-
+        direction = direction_class(item["change"])
         rows.append(
             f"""
             <tr>
@@ -105,6 +167,7 @@ def build_rows(items: list[dict[str, object]]) -> str:
               </td>
               <td>{html.escape(str(item["category"]))}</td>
               <td>{html.escape(str(item["date"]))}</td>
+              <td>{html.escape(str(item["source"]))}</td>
               <td class="number">{money(item["close"], int(item["digits"]))} {html.escape(str(item["unit"]))}</td>
               <td class="number {direction}">{signed(item["change"], int(item["digits"]))}</td>
               <td class="number {direction}">{percent(item["change_rate"])}</td>
@@ -117,14 +180,11 @@ def build_rows(items: list[dict[str, object]]) -> str:
 def build_cards(items: list[dict[str, object]]) -> str:
     cards = []
     for item in items:
-        change = item["change"]
-        direction = "flat"
+        direction = direction_class(item["change"])
         label = "보합"
-        if isinstance(change, float) and change > 0:
-            direction = "up"
+        if direction == "up":
             label = "상승"
-        elif isinstance(change, float) and change < 0:
-            direction = "down"
+        elif direction == "down":
             label = "하락"
 
         cards.append(
@@ -175,7 +235,7 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       line-height: 1.5;
     }}
     main {{
-      width: min(1120px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
       padding: 40px 0;
     }}
@@ -196,7 +256,7 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
     }}
     .summary {{
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 12px;
       margin-bottom: 24px;
     }}
@@ -272,13 +332,11 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
     }}
     footer a {{ color: var(--brand); }}
     @media (max-width: 920px) {{
-      .summary {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
       section {{ overflow-x: auto; }}
-      table {{ min-width: 760px; }}
+      table {{ min-width: 920px; }}
     }}
     @media (max-width: 560px) {{
-      main {{ width: min(100% - 20px, 1120px); padding: 24px 0; }}
-      .summary {{ grid-template-columns: 1fr; }}
+      main {{ width: min(100% - 20px, 1180px); padding: 24px 0; }}
       th, td {{ padding: 12px; }}
     }}
   </style>
@@ -287,7 +345,7 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
   <main>
     <header>
       <h1>Daily Financial Report</h1>
-      <p>생성 시각: {html.escape(date_label)} · 데이터 출처: FinanceDataReader</p>
+      <p>생성 시각: {html.escape(date_label)} · 데이터 출처: FinanceDataReader, 한국은행 ECOS</p>
     </header>
     <div class="summary">
       {cards}
@@ -299,7 +357,8 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
             <th>지표</th>
             <th>구분</th>
             <th>기준일</th>
-            <th class="number">종가</th>
+            <th>출처</th>
+            <th class="number">종가/금리</th>
             <th class="number">전일 대비</th>
             <th class="number">등락률</th>
           </tr>
@@ -310,7 +369,8 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       </table>
     </section>
     <footer>
-      Generated from <a href="https://github.com/FinanceData/FinanceDataReader">FinanceDataReader</a>.
+      Generated from <a href="https://github.com/FinanceData/FinanceDataReader">FinanceDataReader</a>
+      and <a href="https://ecos.bok.or.kr">Bank of Korea ECOS</a>.
       This report is for informational use only.
     </footer>
   </main>

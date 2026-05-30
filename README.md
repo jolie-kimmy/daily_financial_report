@@ -9,6 +9,7 @@ The report is generated every day at 10:00 KST by GitHub Actions.
 
 - Latest report: `docs/index.html`
 - Daily archive: `docs/reports/YYYY-MM-DD.html`
+- Data source notes: `docs/DATA_SOURCES.md`
 
 ## Run locally
 

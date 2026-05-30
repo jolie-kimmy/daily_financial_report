@@ -26,7 +26,7 @@
       line-height: 1.5;
     }
     main {
-      width: min(1120px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
       padding: 40px 0;
     }
@@ -47,7 +47,7 @@
     }
     .summary {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 12px;
       margin-bottom: 24px;
     }
@@ -123,13 +123,11 @@
     }
     footer a { color: var(--brand); }
     @media (max-width: 920px) {
-      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       section { overflow-x: auto; }
-      table { min-width: 760px; }
+      table { min-width: 920px; }
     }
     @media (max-width: 560px) {
-      main { width: min(100% - 20px, 1120px); padding: 24px 0; }
-      .summary { grid-template-columns: 1fr; }
+      main { width: min(100% - 20px, 1180px); padding: 24px 0; }
       th, td { padding: 12px; }
     }
   </style>
@@ -138,7 +136,7 @@
   <main>
     <header>
       <h1>Daily Financial Report</h1>
-      <p>생성 시각: 2026년 05월 30일 14:03 KST · 데이터 출처: FinanceDataReader</p>
+      <p>생성 시각: 2026년 05월 30일 14:26 KST · 데이터 출처: FinanceDataReader, 한국은행 ECOS</p>
     </header>
     <div class="summary">
       
@@ -191,6 +189,66 @@
               <span class="flat">보합 -</span>
             </article>
             
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>미국채 10년</h2>
+              </div>
+              <strong>4.453</strong>
+              <span class="down">하락 -0.04%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>미국채 20년</h2>
+              </div>
+              <strong>4.980</strong>
+              <span class="down">하락 -0.60%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>미국채 30년</h2>
+              </div>
+              <strong>4.993</strong>
+              <span class="up">상승 +0.16%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>국고채 10년</h2>
+              </div>
+              <strong>4.068</strong>
+              <span class="down">하락 -1.90%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>국고채 20년</h2>
+              </div>
+              <strong>4.088</strong>
+              <span class="down">하락 -2.39%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>금리</p>
+                <h2>국고채 30년</h2>
+              </div>
+              <strong>4.006</strong>
+              <span class="down">하락 -2.86%</span>
+            </article>
+            
     </div>
     <section aria-label="시황 상세 표">
       <table>
@@ -199,7 +257,8 @@
             <th>지표</th>
             <th>구분</th>
             <th>기준일</th>
-            <th class="number">종가</th>
+            <th>출처</th>
+            <th class="number">종가/금리</th>
             <th class="number">전일 대비</th>
             <th class="number">등락률</th>
           </tr>
@@ -213,6 +272,7 @@
               </td>
               <td>국내 증시</td>
               <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
               <td class="number">8,476.15 pt</td>
               <td class="number up">+290.86</td>
               <td class="number up">+3.55%</td>
@@ -226,6 +286,7 @@
               </td>
               <td>국내 증시</td>
               <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
               <td class="number">1,074.80 pt</td>
               <td class="number down">-29.56</td>
               <td class="number down">-2.68%</td>
@@ -239,6 +300,7 @@
               </td>
               <td>환율</td>
               <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
               <td class="number">1,507.13 KRW</td>
               <td class="number up">+11.84</td>
               <td class="number up">+0.79%</td>
@@ -252,6 +314,7 @@
               </td>
               <td>환율</td>
               <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
               <td class="number">9.44 KRW</td>
               <td class="number up">+0.06</td>
               <td class="number up">+0.62%</td>
@@ -265,16 +328,102 @@
               </td>
               <td>환율</td>
               <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
               <td class="number">222.81 KRW</td>
               <td class="number flat">-</td>
               <td class="number flat">-</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>미국채 10년</strong>
+                <span>US10YT</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
+              <td class="number">4.453 %</td>
+              <td class="number down">-0.002</td>
+              <td class="number down">-0.04%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>미국채 20년</strong>
+                <span>FRED:DGS20</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-28</td>
+              <td>FinanceDataReader</td>
+              <td class="number">4.980 %</td>
+              <td class="number down">-0.030</td>
+              <td class="number down">-0.60%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>미국채 30년</strong>
+                <span>US30YT</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-29</td>
+              <td>FinanceDataReader</td>
+              <td class="number">4.993 %</td>
+              <td class="number up">+0.008</td>
+              <td class="number up">+0.16%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>국고채 10년</strong>
+                <span>ECOS:817Y002/010210000</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-29</td>
+              <td>한국은행 ECOS</td>
+              <td class="number">4.068 %</td>
+              <td class="number down">-0.079</td>
+              <td class="number down">-1.90%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>국고채 20년</strong>
+                <span>ECOS:817Y002/010220000</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-29</td>
+              <td>한국은행 ECOS</td>
+              <td class="number">4.088 %</td>
+              <td class="number down">-0.100</td>
+              <td class="number down">-2.39%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>국고채 30년</strong>
+                <span>ECOS:817Y002/010230000</span>
+              </td>
+              <td>금리</td>
+              <td>2026-05-29</td>
+              <td>한국은행 ECOS</td>
+              <td class="number">4.006 %</td>
+              <td class="number down">-0.118</td>
+              <td class="number down">-2.86%</td>
             </tr>
             
         </tbody>
       </table>
     </section>
     <footer>
-      Generated from <a href="https://github.com/FinanceData/FinanceDataReader">FinanceDataReader</a>.
+      Generated from <a href="https://github.com/FinanceData/FinanceDataReader">FinanceDataReader</a>
+      and <a href="https://ecos.bok.or.kr">Bank of Korea ECOS</a>.
       This report is for informational use only.
     </footer>
   </main>
