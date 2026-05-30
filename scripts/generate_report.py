@@ -71,6 +71,15 @@ def direction_class(value: object) -> str:
     return "flat"
 
 
+def category_class(category: object) -> str:
+    mapping = {
+        "국내 증시": "domestic",
+        "환율": "fx",
+        "금리": "rates",
+    }
+    return mapping.get(str(category), "general")
+
+
 def fetch_fdr_item(item: MarketItem, today: datetime) -> dict[str, object]:
     start = (today - timedelta(days=21)).strftime("%Y-%m-%d")
     end = (today + timedelta(days=1)).strftime("%Y-%m-%d")
@@ -189,7 +198,7 @@ def build_cards(items: list[dict[str, object]]) -> str:
 
         cards.append(
             f"""
-            <article class="metric">
+            <article class="metric {category_class(item["category"])}">
               <div>
                 <p>{html.escape(str(item["category"]))}</p>
                 <h2>{html.escape(str(item["name"]))}</h2>
@@ -206,6 +215,8 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
     rows = build_rows(items)
     cards = build_cards(items)
     date_label = generated_at.strftime("%Y년 %m월 %d일 %H:%M KST")
+    latest_data_date = max(str(item["date"]) for item in items)
+    market_count = len(items)
 
     return f"""<!doctype html>
 <html lang="ko">
@@ -216,20 +227,24 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
   <style>
     :root {{
       color-scheme: light;
-      --bg: #f6f7f9;
+      --bg: #f3f5f7;
       --panel: #ffffff;
-      --ink: #172033;
+      --ink: #182230;
       --muted: #667085;
-      --line: #d8dee8;
+      --line: #d9e0ea;
       --up: #b42318;
       --down: #175cd3;
       --flat: #475467;
-      --brand: #1f4e79;
+      --brand: #24537a;
+      --teal: #08756f;
+      --gold: #b7791f;
+      --header: #132238;
     }}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      background: var(--bg);
+      background:
+        linear-gradient(180deg, #edf1f5 0, #f8fafc 320px, var(--bg) 100%);
       color: var(--ink);
       font-family: Arial, "Noto Sans KR", sans-serif;
       line-height: 1.5;
@@ -240,12 +255,33 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       padding: 40px 0;
     }}
     header {{
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 24px;
-      padding-bottom: 20px;
+      background: var(--header);
+      color: #ffffff;
+      border: 1px solid #223653;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 28px;
+      box-shadow: 0 16px 40px rgba(20, 35, 56, 0.16);
+      position: relative;
+      overflow: hidden;
+    }}
+    header::before {{
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 5px;
+      background: linear-gradient(90deg, #2f80ed, #12b76a, #f2c94c, #eb5757);
+    }}
+    .header-grid {{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      position: relative;
+      z-index: 1;
     }}
     header p {{
-      color: var(--muted);
+      color: #c8d3df;
       margin: 8px 0 0;
     }}
     h1 {{
@@ -254,22 +290,93 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       margin: 0;
       letter-spacing: 0;
     }}
+    .eyebrow {{
+      color: #8fd3ff;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+    }}
+    .meta-panel {{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(110px, 1fr));
+      gap: 10px;
+      min-width: 280px;
+    }}
+    .meta {{
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 12px;
+    }}
+    .meta span {{
+      color: #9fb1c5;
+      display: block;
+      font-size: 12px;
+    }}
+    .meta strong {{
+      color: #ffffff;
+      display: block;
+      font-size: 18px;
+      margin-top: 2px;
+    }}
+    .source-strip {{
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+    }}
+    .source-strip p {{
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+    }}
+    .badge-row {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }}
+    .badge {{
+      background: #f2f4f7;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 10px;
+    }}
     .summary {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }}
     .metric {{
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 18px;
-      min-height: 158px;
+      border-top: 4px solid var(--brand);
+      padding: 17px;
+      min-height: 150px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+      box-shadow: 0 10px 28px rgba(24, 34, 48, 0.08);
+    }}
+    .metric.domestic {{ border-top-color: var(--brand); }}
+    .metric.fx {{ border-top-color: var(--teal); }}
+    .metric.rates {{ border-top-color: var(--gold); }}
+    .metric:hover {{
+      transform: translateY(-1px);
+      transition: transform 140ms ease, box-shadow 140ms ease;
+      box-shadow: 0 14px 32px rgba(24, 34, 48, 0.12);
     }}
     .metric p {{
       color: var(--muted);
@@ -286,6 +393,10 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
     }}
     .metric span {{
       font-weight: 700;
+      width: fit-content;
+      border-radius: 999px;
+      background: #f8fafc;
+      padding: 5px 9px;
     }}
     section {{
       background: var(--panel);
@@ -305,11 +416,12 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       vertical-align: middle;
     }}
     th {{
-      background: #eef3f8;
-      color: #29435c;
+      background: #eef3f7;
+      color: #344054;
       font-size: 13px;
       font-weight: 700;
     }}
+    tbody tr:hover {{ background: #fafcff; }}
     td span {{
       display: block;
       color: var(--muted);
@@ -329,9 +441,14 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       color: var(--muted);
       font-size: 13px;
       margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }}
     footer a {{ color: var(--brand); }}
     @media (max-width: 920px) {{
+      .header-grid {{ grid-template-columns: 1fr; }}
+      .meta-panel {{ min-width: 0; }}
       section {{ overflow-x: auto; }}
       table {{ min-width: 920px; }}
     }}
@@ -344,9 +461,40 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
 <body>
   <main>
     <header>
-      <h1>Daily Financial Report</h1>
-      <p>생성 시각: {html.escape(date_label)} · 데이터 출처: FinanceDataReader, 한국은행 ECOS</p>
+      <div class="header-grid">
+        <div>
+          <p class="eyebrow">Market Snapshot</p>
+          <h1>Daily Financial Report</h1>
+          <p>한국 증시, 환율, 미국채와 국고채 장기 금리를 한 화면에 정리합니다.</p>
+        </div>
+        <div class="meta-panel" aria-label="리포트 메타 정보">
+          <div class="meta">
+            <span>생성 시각</span>
+            <strong>{html.escape(date_label)}</strong>
+          </div>
+          <div class="meta">
+            <span>최신 기준일</span>
+            <strong>{html.escape(latest_data_date)}</strong>
+          </div>
+          <div class="meta">
+            <span>추적 지표</span>
+            <strong>{market_count}개</strong>
+          </div>
+          <div class="meta">
+            <span>업데이트</span>
+            <strong>매일 10:00</strong>
+          </div>
+        </div>
+      </div>
     </header>
+    <div class="source-strip">
+      <p>데이터 출처와 코드 검증 기준은 DATA_SOURCES.md에 기록됩니다.</p>
+      <div class="badge-row" aria-label="데이터 출처">
+        <span class="badge">FinanceDataReader</span>
+        <span class="badge">FRED</span>
+        <span class="badge">한국은행 ECOS</span>
+      </div>
+    </div>
     <div class="summary">
       {cards}
     </div>
