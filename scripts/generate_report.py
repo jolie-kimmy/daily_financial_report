@@ -290,14 +290,6 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       margin: 0;
       letter-spacing: 0;
     }}
-    .eyebrow {{
-      color: #8fd3ff;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0;
-      margin: 0 0 10px;
-      text-transform: uppercase;
-    }}
     .meta-panel {{
       display: grid;
       grid-template-columns: repeat(2, minmax(110px, 1fr));
@@ -321,27 +313,11 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       font-size: 18px;
       margin-top: 2px;
     }}
-    .source-strip {{
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      padding: 12px 14px;
-    }}
-    .source-strip p {{
-      color: var(--muted);
-      margin: 0;
-      font-size: 14px;
-    }}
     .badge-row {{
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-bottom: 18px;
     }}
     .badge {{
       background: #f2f4f7;
@@ -463,9 +439,7 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
     <header>
       <div class="header-grid">
         <div>
-          <p class="eyebrow">Market Snapshot</p>
           <h1>Daily Financial Report</h1>
-          <p>한국 증시, 환율, 미국채와 국고채 장기 금리를 한 화면에 정리합니다.</p>
         </div>
         <div class="meta-panel" aria-label="리포트 메타 정보">
           <div class="meta">
@@ -487,13 +461,10 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
         </div>
       </div>
     </header>
-    <div class="source-strip">
-      <p>데이터 출처와 코드 검증 기준은 DATA_SOURCES.md에 기록됩니다.</p>
-      <div class="badge-row" aria-label="데이터 출처">
-        <span class="badge">FinanceDataReader</span>
-        <span class="badge">FRED</span>
-        <span class="badge">한국은행 ECOS</span>
-      </div>
+    <div class="badge-row" aria-label="데이터 출처">
+      <span class="badge">FinanceDataReader</span>
+      <span class="badge">FRED</span>
+      <span class="badge">한국은행 ECOS</span>
     </div>
     <div class="summary">
       {cards}
