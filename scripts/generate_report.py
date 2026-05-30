@@ -33,6 +33,10 @@ class MarketItem:
 MARKET_ITEMS = [
     MarketItem("코스피", "KS11", "국내 증시", "pt", 2),
     MarketItem("코스닥", "KQ11", "국내 증시", "pt", 2),
+    MarketItem("다우존스", "DJI", "미국 증시", "pt", 2),
+    MarketItem("나스닥", "IXIC", "미국 증시", "pt", 2),
+    MarketItem("S&P 500", "US500", "미국 증시", "pt", 2),
+    MarketItem("러셀 2000", "RUT", "미국 증시", "pt", 2),
     MarketItem("원/달러", "USD/KRW", "환율", "KRW", 2),
     MarketItem("원/엔", "JPY/KRW", "환율", "KRW", 2),
     MarketItem("원/위안", "CNY/KRW", "환율", "KRW", 2),
@@ -74,6 +78,7 @@ def direction_class(value: object) -> str:
 def category_class(category: object) -> str:
     mapping = {
         "국내 증시": "domestic",
+        "미국 증시": "us-market",
         "환율": "fx",
         "금리": "rates",
     }
@@ -347,6 +352,7 @@ def render_html(items: list[dict[str, object]], generated_at: datetime) -> str:
       box-shadow: 0 10px 28px rgba(24, 34, 48, 0.08);
     }}
     .metric.domestic {{ border-top-color: var(--brand); }}
+    .metric.us-market {{ border-top-color: #6941c6; }}
     .metric.fx {{ border-top-color: var(--teal); }}
     .metric.rates {{ border-top-color: var(--gold); }}
     .metric:hover {{
