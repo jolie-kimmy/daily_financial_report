@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Financial Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d8dee8;
+      --up: #b42318;
+      --down: #175cd3;
+      --flat: #475467;
+      --brand: #1f4e79;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+    }
+    header p {
+      color: var(--muted);
+      margin: 8px 0 0;
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.1;
+      margin: 0;
+      letter-spacing: 0;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 158px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+    .metric p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 4px;
+    }
+    .metric h2 {
+      font-size: 17px;
+      margin: 0;
+    }
+    .metric strong {
+      font-size: 25px;
+      letter-spacing: 0;
+    }
+    .metric span {
+      font-weight: 700;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      background: #eef3f8;
+      color: #29435c;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    td span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .number {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .up { color: var(--up); }
+    .down { color: var(--down); }
+    .flat { color: var(--flat); }
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 18px;
+    }
+    footer a { color: var(--brand); }
+    @media (max-width: 920px) {
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      section { overflow-x: auto; }
+      table { min-width: 760px; }
+    }
+    @media (max-width: 560px) {
+      main { width: min(100% - 20px, 1120px); padding: 24px 0; }
+      .summary { grid-template-columns: 1fr; }
+      th, td { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Daily Financial Report</h1>
+      <p>생성 시각: 2026년 05월 30일 14:00 KST · 데이터 출처: FinanceDataReader</p>
+    </header>
+    <div class="summary">
+      
+            <article class="metric">
+              <div>
+                <p>국내 증시</p>
+                <h2>코스피</h2>
+              </div>
+              <strong>8,476.15</strong>
+              <span class="up">상승 +3.55%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>국내 증시</p>
+                <h2>코스닥</h2>
+              </div>
+              <strong>1,074.80</strong>
+              <span class="down">하락 -2.68%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>환율</p>
+                <h2>원/달러</h2>
+              </div>
+              <strong>1,507.13</strong>
+              <span class="up">상승 +0.79%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>환율</p>
+                <h2>원/엔</h2>
+              </div>
+              <strong>9.44</strong>
+              <span class="up">상승 +0.62%</span>
+            </article>
+            
+
+            <article class="metric">
+              <div>
+                <p>환율</p>
+                <h2>원/위안</h2>
+              </div>
+              <strong>222.81</strong>
+              <span class="flat">보합 -</span>
+            </article>
+            
+    </div>
+    <section aria-label="시황 상세 표">
+      <table>
+        <thead>
+          <tr>
+            <th>지표</th>
+            <th>구분</th>
+            <th>기준일</th>
+            <th class="number">종가</th>
+            <th class="number">전일 대비</th>
+            <th class="number">등락률</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr>
+              <td>
+                <strong>코스피</strong>
+                <span>KS11</span>
+              </td>
+              <td>국내 증시</td>
+              <td>2026-05-29</td>
+              <td class="number">8,476.15 pt</td>
+              <td class="number up">+290.86</td>
+              <td class="number up">+3.55%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>코스닥</strong>
+                <span>KQ11</span>
+              </td>
+              <td>국내 증시</td>
+              <td>2026-05-29</td>
+              <td class="number">1,074.80 pt</td>
+              <td class="number down">-29.56</td>
+              <td class="number down">-2.68%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>원/달러</strong>
+                <span>USD/KRW</span>
+              </td>
+              <td>환율</td>
+              <td>2026-05-29</td>
+              <td class="number">1,507.13 KRW</td>
+              <td class="number up">+11.84</td>
+              <td class="number up">+0.79%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>원/엔</strong>
+                <span>JPY/KRW</span>
+              </td>
+              <td>환율</td>
+              <td>2026-05-29</td>
+              <td class="number">9.44 KRW</td>
+              <td class="number up">+0.06</td>
+              <td class="number up">+0.62%</td>
+            </tr>
+            
+
+            <tr>
+              <td>
+                <strong>원/위안</strong>
+                <span>CNY/KRW</span>
+              </td>
+              <td>환율</td>
+              <td>2026-05-29</td>
+              <td class="number">222.81 KRW</td>
+              <td class="number flat">-</td>
+              <td class="number flat">-</td>
+            </tr>
+            
+        </tbody>
+      </table>
+    </section>
+    <footer>
+      Generated from <a href="https://github.com/FinanceData/FinanceDataReader">FinanceDataReader</a>.
+      This report is for informational use only.
+    </footer>
+  </main>
+</body>
+</html>
